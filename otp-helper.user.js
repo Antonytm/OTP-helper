@@ -10,14 +10,14 @@
 // @require     https://crypto-js.googlecode.com/files/2.3.0-crypto-sha1-hmac.js
 // @require     http://www.tumuski.com/library/Nibbler/Nibbler.js
 // @require     https://rawgit.com/adulau/hotp-js/master/hotp/hotp.js
-// @version     1.0
+// @version     1.0.1
 // ==/UserScript==
 
 
 
 var pageScript = function() {
   var $ = jQuery;
-  var SEND_BUTTON_TEXT = "SEND OPT CODE";
+  var SEND_BUTTON_TEXT = "SEND OTP CODE";
   
   
   $(document).ready(function() {
