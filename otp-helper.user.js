@@ -2,7 +2,7 @@
 // @name        OTP Helpers
 // @description Provides button to automatically fill OTP code. Developed by Alex Povar.
 // @author      Alex Povar
-// @downloadURL https://raw.githubusercontent.com/Sitecore/OnTime-Accelerators-Download/master/LatestRelease/OnTime_Helpers.user.js
+// @downloadURL https://raw.githubusercontent.com/Zvirja/OTP-helper/master/otp-helper.user.js
 // @include     https://sitecore.onelogin.com/login
 // @namespace   https://github.com/Zvirja/OTP-helper
 // @grant       GM_getValue
