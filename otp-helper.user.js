@@ -15,88 +15,62 @@
 
 
 
-var pageScript = function() {
+var pageScript = function () {
   var $ = jQuery;
   var SEND_BUTTON_TEXT = "SEND OTP CODE";
-  
-  
-  $(document).ready(function() {
-    
+
+
+  $(document).ready(function () {
+
     //ADD CONFIGURATION BUTTON
-    
+
     var configureBtn = $('<button id="ConfigureOTPHelper">CONFIGURE OTP HELPER</button>').css({
       position: "absolute",
       top: 0,
       right: 0,
       margin: "10px"
     });
-    
-    configureBtn.click(function() {
+
+    configureBtn.click(function () {
       var currentConfig = OTP_HELPER_getConfig();
       var currentValue = "";
-      if(currentConfig) {
-        currentValue = `${currentConfig.credentialID}|${currentConfig.sharedSecret}`; 
+      if (currentConfig) {
+        currentValue = `${currentConfig.credentialID}|${currentConfig.sharedSecret}`;
       }
-      
+
       var rawValue = prompt("Enter new OTP parameters.\nInput format: CREDENTIAL_ID|SHARED_SECRET", currentValue);
-      if(rawValue) {
+      if (rawValue) {
         var pair = rawValue.split("|");
-        if(pair.length !== 2) {
-          return; 
+        if (pair.length !== 2) {
+          return;
         }
-        
+
         OTP_HELPER_setConfig(pair[0], pair[1]);
       }
-      
+
       return false;
     });
-    
+
     $(document.body).append(configureBtn);
-    
-    
-    //ADD SEND_BUTTON at the moment when spinner appears
-    
+
     var originalSpinInit = Application.Helpers.Spin.initialize;
-    Application.Helpers.Spin.initialize = function() {
+    Application.Helpers.Spin.initialize = function () {
+      //SEND REQUEST IMMEDIATELY WHEN SPINNER APPEARS ON PAGE
       var config = OTP_HELPER_getConfig();
-      if(config != null) {
-        var container = $("fieldset.buttons > ol");
-        container.append(`<li><button>${SEND_BUTTON_TEXT}</button></li>`);
-        
-      var button = $("button", container);
-        
-      button.click(function() {
+      if (config != null) {
         try {
           var otp = OTP_HELPER_getOTP(config);
-            
-          button.text("SENDING...");
-            
           $.ajax(`https://app.onelogin.com/otp_auto_token/receive_token/${config.credentialID}/${otp}`)
-           .then(function() {
-             var btnLabel = button.text();
-             button.text("SENT!");
-             setTimeout(_ => button.text(SEND_BUTTON_TEXT), 1000);
-           })
-           .fail(function(_, status, err) {
+           .fail(function (_, status, err) {
              console.error(err);
-             button.text("ERROR! CHECK CONSOLE FOR MORE DETAIL");
-             setTimeout(_ => button.text(SEND_BUTTON_TEXT), 3000);
            });
-            
-        } catch(e) {
-          button.text("ERROR IN SCRIPT! CHECK CONSOLE FOR MORE DETAIL");
-          setTimeout(_ => button.text(SEND_BUTTON_TEXT), 3000);
+        } catch (e) {
+          console.error(e);
         }
-          
-          
-        return false;
-      });
-                                   
+      }
+
+      originalSpinInit.call(this);
     }
-                         
-    originalSpinInit.call(this);
-  }
-    
   });
 };
 
@@ -104,29 +78,29 @@ var pageScript = function() {
 
 /* PRIVILEGED API EXPORT */
 
-exportFunction(function() {
+exportFunction(function () {
   var value = GM_getValue("config");
-  if(value) {
+  if (value) {
     return JSON.parse(value);
   }
-  
+
   return null;
 }, unsafeWindow, { defineAs: "OTP_HELPER_getConfig" });
 
-exportFunction(function(credentialID, sharedSecret) {
+exportFunction(function (credentialID, sharedSecret) {
   GM_setValue("config", JSON.stringify({
     credentialID: credentialID,
     sharedSecret: sharedSecret
   }));
 }, unsafeWindow, { defineAs: "OTP_HELPER_setConfig" });
 
-exportFunction(function(config) {
+exportFunction(function (config) {
   /* Function that calculates OTP */
   var interval = 30;
   var timestamp = Math.round((new Date()).getTime() / 1000);
   var timecode = Math.floor((timestamp * 1000) / (interval * 1000));
-  
-  return hotp(base32_to_hex(config.sharedSecret), timecode, "dec6");  
+
+  return hotp(base32_to_hex(config.sharedSecret), timecode, "dec6");
 }, unsafeWindow, { defineAs: "OTP_HELPER_getOTP" });
 
 
@@ -137,7 +111,7 @@ scriptElem.type = "text/javascript";
 scriptElem.id = "OTP Helpers";
 scriptElem.appendChild(document.createTextNode("(" + pageScript.toString() + ")()"));
 
-setTimeout(function() {
+setTimeout(function () {
   document.head.appendChild(scriptElem);
   scriptElem.remove();
 }, 0);
